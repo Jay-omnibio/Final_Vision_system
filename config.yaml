@@ -1,0 +1,26 @@
+vision:
+  detector_type: subtract
+
+  yolo:
+    weights: Models/YOLO_Detector/weights/best.pt
+    conf: 0.25
+    iou: 0.45
+    device: null
+
+  subtract:
+    background_image: data/no_object.jpg
+    mode: improved
+    threshold: 30
+    min_area: 500
+    kernel_size: 25
+    roi: null
+    merge_horizontal_gap: 25
+    merge_vertical_overlap_ratio: 0.35
+    hsv_threshold_boost: 8
+
+  tracker:
+    max_distance: 300.0
+    max_missing_frames: 4
+    prefer_downward_motion: true
+    start_track_id: 1
+
