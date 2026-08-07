@@ -32,3 +32,26 @@ Run this inside the Isaac Python environment where `omni`, `pxr`, and
 python Camera_feed\scripts\direct_camera_demo.py
 ```
 
+## Save API Frames
+
+For slower HTTP/API testing, save frames first and run the pipeline offline.
+Create a local `.env` from `.env.example` and set your API key:
+
+```powershell
+copy .env.example .env
+```
+
+Then run:
+
+```powershell
+python Camera_feed\save_frames.py --out-dir frames --count 2400 --delay 0.2
+```
+
+The script reads:
+
+```text
+CAMERA_API_URL
+CAMERA_API_KEY
+```
+
+from `.env` or the shell environment. Do not commit `.env`.

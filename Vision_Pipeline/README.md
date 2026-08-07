@@ -77,3 +77,9 @@ Run a folder in sorted order so tracker IDs persist across frames:
 ```powershell
 python Vision_Pipeline\scripts\run_image_sequence.py path\to\frames --config config.yaml --detector yolo
 ```
+
+Run saved frames and write an annotated video:
+
+```powershell
+python Vision_Pipeline\scripts\run_frames_to_video.py frames --config config.yaml --output outputs\pipeline_output.mp4
+```
