@@ -17,6 +17,14 @@ if str(ROOT) not in sys.path:
 from pipeline_core import VisionPipeline, VisionPipelineConfig
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+TRACK_COLORS = [
+    (0, 220, 255),
+    (255, 180, 0),
+    (0, 180, 80),
+    (220, 80, 255),
+    (255, 80, 80),
+    (80, 160, 255),
+]
 
 
 def iter_images(folder: str | Path):
@@ -64,37 +72,24 @@ def draw_result(frame, result):
 
     for detection in result.detections:
         x1, y1, x2, y2 = detection.xyxy
-        cv2.rectangle(output, (x1, y1), (x2, y2), (0, 220, 80), 2)
-        label = detection.class_name or "det"
-        cv2.putText(
-            output,
-            f"{label} {detection.score:.2f}",
-            (x1, max(20, y1 - 8)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.55,
-            (0, 220, 80),
-            2,
-            cv2.LINE_AA,
-        )
+        cv2.rectangle(output, (x1, y1), (x2, y2), (80, 80, 80), 1)
 
     for track in result.tracks:
         x, y, width, height = track.box
         x2 = x + width
         y2 = y + height
-        cv2.rectangle(output, (x, y), (x2, y2), (0, 200, 255), 2)
-        cv2.circle(output, track.centroid, 4, (0, 200, 255), -1)
+        color = TRACK_COLORS[(track.track_id - 1) % len(TRACK_COLORS)]
+        cv2.rectangle(output, (x, y), (x2, y2), color, 2)
         cv2.putText(
             output,
             f"ID {track.track_id}",
             (x, min(output.shape[0] - 8, y2 + 20)),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.6,
-            (0, 200, 255),
+            color,
             2,
             cv2.LINE_AA,
         )
-        for start, end in zip(track.history, track.history[1:]):
-            cv2.line(output, start, end, (255, 180, 0), 2)
 
     cv2.putText(
         output,
@@ -171,4 +166,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
