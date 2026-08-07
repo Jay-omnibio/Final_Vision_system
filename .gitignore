@@ -8,10 +8,10 @@ env/
 
 *.npy
 *.npz
+!Models/Prototype_Classifier/galleries/default_gallery.npz
 outputs/
 data/
 
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-

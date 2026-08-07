@@ -24,3 +24,8 @@ vision:
     prefer_downward_motion: true
     start_track_id: 1
 
+classifier:
+  enabled: false
+  gallery_path: Models/Prototype_Classifier/galleries/default_gallery.npz
+  dino_model: dinov2-small
+  device: auto
