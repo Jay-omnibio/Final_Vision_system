@@ -29,3 +29,10 @@ classifier:
   gallery_path: Models/Prototype_Classifier/galleries/default_gallery.npz
   dino_model: dinov2-small
   device: auto
+
+camera:
+  type: direct_isaac
+  camera_path: /World/Camera
+  width: 640
+  height: 480
+  auto_find_camera: true
