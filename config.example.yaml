@@ -24,6 +24,15 @@ vision:
     prefer_downward_motion: true
     start_track_id: 1
 
+  events:
+    enabled: true
+    axis: y
+    line_ratio: 0.88
+    direction: positive
+    trigger_position: leading_edge
+    min_track_age: 1
+    unknown_label: unknown
+
 classifier:
   enabled: false
   gallery_path: Models/Prototype_Classifier/galleries/default_gallery.npz

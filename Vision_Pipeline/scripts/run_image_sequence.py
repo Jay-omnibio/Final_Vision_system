@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,9 +22,14 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 def iter_images(folder: str | Path):
     root = Path(folder)
-    for path in sorted(root.rglob("*")):
+    for path in sorted(root.rglob("*"), key=natural_sort_key):
         if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS:
             yield path
+
+
+def natural_sort_key(path: Path):
+    parts = re.split(r"(\d+)", path.name)
+    return [int(part) if part.isdigit() else part.lower() for part in parts]
 
 
 def parse_args() -> argparse.Namespace:

@@ -47,6 +47,14 @@ class VisionPipelineConfig:
     prefer_downward_motion: bool = True
     start_track_id: int = 1
 
+    event_enabled: bool = True
+    event_axis: str = "y"
+    event_line_ratio: float = 0.88
+    event_direction: str = "positive"
+    event_trigger_position: str = "leading_edge"
+    event_min_track_age: int = 1
+    event_unknown_label: str = "unknown"
+
     @classmethod
     def from_yaml(cls, path: str | Path) -> "VisionPipelineConfig":
         """Load pipeline config from a YAML file."""
@@ -66,6 +74,7 @@ class VisionPipelineConfig:
         yolo = vision.get("yolo", {}) or {}
         subtract = vision.get("subtract", {}) or {}
         tracker = vision.get("tracker", {}) or {}
+        events = vision.get("events", {}) or {}
 
         return cls(
             detector_type=str(vision.get("detector_type", "yolo")),
@@ -88,4 +97,11 @@ class VisionPipelineConfig:
             max_missing_frames=int(tracker.get("max_missing_frames", 4)),
             prefer_downward_motion=bool(tracker.get("prefer_downward_motion", True)),
             start_track_id=int(tracker.get("start_track_id", 1)),
+            event_enabled=bool(events.get("enabled", True)),
+            event_axis=str(events.get("axis", "y")),
+            event_line_ratio=float(events.get("line_ratio", 0.88)),
+            event_direction=str(events.get("direction", "positive")),
+            event_trigger_position=str(events.get("trigger_position", "leading_edge")),
+            event_min_track_age=int(events.get("min_track_age", 1)),
+            event_unknown_label=str(events.get("unknown_label", "unknown")),
         )
