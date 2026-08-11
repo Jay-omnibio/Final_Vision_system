@@ -19,6 +19,7 @@ for path in (PROJECT_ROOT, VISION_ROOT, CLASSIFIER_ROOT):
         sys.path.insert(0, str(path))
 
 from Runtime.live_sources import create_frame_source  # noqa: E402
+from Runtime.object_store import ObjectEventStore  # noqa: E402
 from pipeline_core import ObjectPassingConfig, ObjectPassingDetector, VisionPipeline, VisionPipelineConfig  # noqa: E402
 from prototype_classifier import PrototypeClassifier  # noqa: E402
 
@@ -30,6 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repeat-frames", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--jsonl", default=None, help="Optional path to write one JSON event per line")
+    parser.add_argument("--no-store", action="store_true", help="Disable operator event/crop storage")
     parser.add_argument("--print-json", action="store_true")
     parser.add_argument("--detector", default=None, choices=["yolo", "subtract"])
     parser.add_argument("--conf", type=float, default=None)
@@ -133,6 +135,9 @@ def main() -> None:
         frames_dir=args.frames_dir,
         repeat=args.repeat_frames,
     )
+    store = None
+    if not args.no_store:
+        store = ObjectEventStore.from_config(raw_config.get("operator_store", {}) or {}, project_root=PROJECT_ROOT)
     jsonl_handle = None
     if args.jsonl:
         jsonl_path = Path(args.jsonl)
@@ -156,6 +161,8 @@ def main() -> None:
             for event in events:
                 payload = event.to_dict()
                 payload["timestamp"] = time.time()
+                if store is not None:
+                    payload = store.record_event(payload, frame)
                 print_event(payload, print_json=args.print_json)
                 if jsonl_handle is not None:
                     jsonl_handle.write(json.dumps(payload) + "\n")
