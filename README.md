@@ -35,6 +35,15 @@ python Runtime\run_live_vision.py --frames-dir D:\Coding\Omnibio\frames --limit 
 For HTTP/API camera input, set `camera.type: api` in `config.yaml` and put
 `CAMERA_API_URL` / `CAMERA_API_KEY` in a local `.env`.
 
+Debug a headless run by saving an annotated video:
+
+```powershell
+python Runtime\run_live_vision.py --config config.yaml --debug-video
+```
+
+The video is written under `outputs/live_debug_<timestamp>.mp4` when the run
+stops.
+
 ## Local Control Panel
 
 Start a small local operator page:
@@ -43,8 +52,8 @@ Start a small local operator page:
 python Runtime\control_server.py --host 127.0.0.1 --port 7860
 ```
 
-Open `http://127.0.0.1:7860` to start/stop the runtime, edit `config.yaml`,
-and view recent object-passed events.
+Open `http://127.0.0.1:7860` to start/stop the runtime, optionally enable debug
+video, edit `config.yaml`, and view recent object-passed events.
 
 ## Teaching Objects
 

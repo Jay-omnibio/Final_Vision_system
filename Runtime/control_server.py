@@ -35,6 +35,8 @@ INDEX_HTML = r"""<!doctype html>
 <body>
   <h1>Final Vision Control</h1>
   <p>Status: <span id="status">loading...</span></p>
+  <label><input id="debugVideo" type="checkbox" /> Save debug video</label>
+  <br />
   <button onclick="startRuntime()">Start System</button>
   <button onclick="stopRuntime()">Stop System</button>
   <button onclick="loadConfig()">Reload Config</button>
@@ -72,7 +74,8 @@ async function saveConfig() {
   await status();
 }
 async function startRuntime() {
-  await api('/api/start', {method: 'POST'});
+  const debug_video = document.getElementById('debugVideo').checked;
+  await api('/api/start', {method: 'POST', body: JSON.stringify({debug_video})});
   await status();
 }
 async function stopRuntime() {
@@ -96,20 +99,28 @@ class RuntimeManager:
         self.python_exe = python_exe
         self.config_path = config_path
         self.project_root = project_root
+        self.stop_file = project_root / "data" / "runtime" / "stop_live_vision.flag"
         self.process: subprocess.Popen | None = None
 
     def is_running(self) -> bool:
         return self.process is not None and self.process.poll() is None
 
-    def start(self) -> None:
+    def start(self, *, debug_video: bool = False) -> None:
         if self.is_running():
             return
+        self.stop_file.parent.mkdir(parents=True, exist_ok=True)
+        if self.stop_file.exists():
+            self.stop_file.unlink()
         command = [
             self.python_exe,
             "Runtime/run_live_vision.py",
             "--config",
             str(self.config_path),
+            "--stop-file",
+            str(self.stop_file),
         ]
+        if debug_video:
+            command.append("--debug-video")
         self.process = subprocess.Popen(
             command,
             cwd=self.project_root,
@@ -122,12 +133,20 @@ class RuntimeManager:
             self.process = None
             return
         assert self.process is not None
-        self.process.terminate()
+        self.stop_file.parent.mkdir(parents=True, exist_ok=True)
+        self.stop_file.write_text("stop", encoding="utf-8")
         try:
-            self.process.wait(timeout=8)
+            self.process.wait(timeout=15)
         except subprocess.TimeoutExpired:
-            self.process.kill()
-            self.process.wait(timeout=8)
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=8)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.wait(timeout=8)
+        finally:
+            if self.stop_file.exists():
+                self.stop_file.unlink()
         self.process = None
 
     def status(self) -> dict:
@@ -158,7 +177,8 @@ class ControlHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         path = urlparse(self.path).path
         if path == "/api/start":
-            self.manager.start()
+            payload = self._read_json()
+            self.manager.start(debug_video=bool(payload.get("debug_video", False)))
             self._send_json(self.manager.status())
         elif path == "/api/stop":
             self.manager.stop()

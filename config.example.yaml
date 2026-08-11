@@ -1,9 +1,9 @@
 vision:
-  detector_type: subtract
+  detector_type: yolo
 
   yolo:
     weights: Models/YOLO_Detector/weights/best.pt
-    conf: 0.25
+    conf: 0.45
     iou: 0.45
     device: null
 
