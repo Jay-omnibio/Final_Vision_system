@@ -1,0 +1,1 @@
+"""Optional novelty pipeline package."""

@@ -45,3 +45,4 @@ camera:
   width: 640
   height: 480
   auto_find_camera: true
+  frame_delay: 0.0

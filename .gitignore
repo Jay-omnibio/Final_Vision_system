@@ -11,6 +11,7 @@ env/
 !Models/Prototype_Classifier/galleries/default_gallery.npz
 outputs/
 data/
+frames/
 
 .pytest_cache/
 .mypy_cache/
