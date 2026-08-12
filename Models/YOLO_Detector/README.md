@@ -36,6 +36,12 @@ python Models\YOLO_Detector\examples\detect_image.py path\to\image.jpg --output 
 Default weights live at:
 
 ```text
+Models/YOLO_Detector/weights/best.onnx
+```
+
+If `best.onnx` is not available, the detector also accepts:
+
+```text
 Models/YOLO_Detector/weights/best.pt
 ```
 

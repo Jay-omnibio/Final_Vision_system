@@ -22,7 +22,7 @@ Not included yet:
 
 | Detector | Needs |
 | --- | --- |
-| `yolo` | `Models/YOLO_Detector/weights/best.pt` |
+| `yolo` | `Models/YOLO_Detector/weights/best.onnx` or `Models/YOLO_Detector/weights/best.pt` |
 | `subtract` | an empty-background image |
 
 ## Python Usage

@@ -2,10 +2,11 @@ vision:
   detector_type: yolo
 
   yolo:
-    weights: Models/YOLO_Detector/weights/best.pt
+    # Use either an ONNX model or a PyTorch .pt file.
+    weights: Models/YOLO_Detector/weights/best.onnx
     conf: 0.45
     iou: 0.45
-    device: null
+    device: cpu
 
   subtract:
     background_image: data/no_object.jpg

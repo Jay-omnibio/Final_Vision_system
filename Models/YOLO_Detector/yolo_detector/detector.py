@@ -12,7 +12,18 @@ from .image_utils import load_image_bgr
 from .types import BBox, DetectionResult
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_WEIGHTS = PACKAGE_ROOT / "weights" / "best.pt"
+DEFAULT_WEIGHTS = PACKAGE_ROOT / "weights" / "best.onnx"
+DEFAULT_PT_WEIGHTS = PACKAGE_ROOT / "weights" / "best.pt"
+
+
+def _resolve_default_weights() -> Path:
+    if DEFAULT_WEIGHTS.is_file():
+        return DEFAULT_WEIGHTS
+    if DEFAULT_PT_WEIGHTS.is_file():
+        return DEFAULT_PT_WEIGHTS
+    raise FileNotFoundError(
+        f"YOLO weights not found. Expected either {DEFAULT_WEIGHTS} or {DEFAULT_PT_WEIGHTS}"
+    )
 
 
 class YoloDetector:
@@ -28,7 +39,7 @@ class YoloDetector:
     ) -> None:
         from ultralytics import YOLO
 
-        self.weights = Path(weights) if weights is not None else DEFAULT_WEIGHTS
+        self.weights = Path(weights) if weights is not None else _resolve_default_weights()
         if not self.weights.is_file():
             raise FileNotFoundError(f"YOLO weights not found: {self.weights}")
 

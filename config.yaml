@@ -2,10 +2,10 @@ vision:
   detector_type: yolo
 
   yolo:
-    weights: Models/YOLO_Detector/weights/best.pt
+    weights: Models/YOLO_Detector/weights/best.onnx
     conf: 0.45
     iou: 0.45
-    device: null
+    device: cpu
 
   subtract:
     background_image: data/no_object.jpg
@@ -35,17 +35,24 @@ vision:
 
 classifier:
   enabled: false
-  gallery_path: Models/Prototype_Classifier/galleries/default_gallery.npz
+  #gallery_path: Models/Prototype_Classifier/galleries/default_gallery.npz
+  gallery_path: Models/Prototype_Classifier/galleries/gallery.npz
   dino_model: dinov2-small
   device: auto
 
 camera:
-  type: direct_isaac
+  type: api
   camera_path: /World/Camera
   width: 640
   height: 480
   auto_find_camera: true
   frame_delay: 0.0
+
+  api_url: http://127.0.0.1:3000
+  endpoint: /api/demo/camera/rgb/frame
+  timeout: 10.0
+  retry_delay: 0.2
+  wait: false
 
 operator_store:
   enabled: true
