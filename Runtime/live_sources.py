@@ -117,6 +117,7 @@ class ApiFrameSource(FrameSource):
         endpoint: str = "/api/demo/camera/rgb/frame",
         timeout: float = 10.0,
         delay: float = 0.0,
+        retry_delay: float = 0.2,
         wait: bool = False,
     ) -> None:
         api_url = api_url.rstrip("/")
@@ -125,21 +126,31 @@ class ApiFrameSource(FrameSource):
         self.headers = {"X-API-Key": api_key} if api_key else {}
         self.timeout = float(timeout)
         self.delay = max(0.0, float(delay))
+        self.retry_delay = max(0.0, float(retry_delay))
         self.params = {"wait": "true"} if wait else None
 
     def frames(self) -> Iterator[np.ndarray]:
         while True:
-            response = requests.get(
-                self.frame_url,
-                headers=self.headers,
-                params=self.params,
-                timeout=self.timeout,
-            )
-            if response.status_code != 200:
-                raise RuntimeError(f"Frame API returned {response.status_code}: {response.text[:200]}")
-            frame = cv2.imdecode(np.frombuffer(response.content, dtype=np.uint8), cv2.IMREAD_COLOR)
-            if frame is None:
-                raise RuntimeError("Frame API response could not be decoded as an image")
+            try:
+                response = requests.get(
+                    self.frame_url,
+                    headers=self.headers,
+                    params=self.params,
+                    timeout=self.timeout,
+                )
+                if response.status_code != 200:
+                    print(f"Frame API returned {response.status_code}: {response.text[:200]}", flush=True)
+                    time.sleep(self.retry_delay)
+                    continue
+                frame = cv2.imdecode(np.frombuffer(response.content, dtype=np.uint8), cv2.IMREAD_COLOR)
+                if frame is None:
+                    print("Frame API response could not be decoded as an image", flush=True)
+                    time.sleep(self.retry_delay)
+                    continue
+            except requests.RequestException as exc:
+                print(f"Frame API request failed: {exc}", flush=True)
+                time.sleep(self.retry_delay)
+                continue
             yield frame
             if self.delay:
                 time.sleep(self.delay)
@@ -170,6 +181,7 @@ def create_frame_source(camera_config: dict, *, frames_dir: str | None = None, r
             endpoint=str(camera_config.get("endpoint", "/api/demo/camera/rgb/frame")),
             timeout=float(camera_config.get("timeout", 10.0)),
             delay=float(camera_config.get("frame_delay", 0.0) or 0.0),
+            retry_delay=float(camera_config.get("retry_delay", 0.2) or 0.0),
             wait=bool(camera_config.get("wait", False)),
         )
 

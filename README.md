@@ -9,14 +9,13 @@ Current migration scope:
 - `Models/Object_Tracker`: centroid-based object tracking.
 - `Models/Subtract_Detector`: background-subtraction bounding-box detection.
 - `Models/Prototype_Classifier`: DINO embedding + `.npz` prototype classification.
+- `Models/Novelty_Detector`: known/new runtime using migrated novelty artifacts.
 - `Camera_feed`: direct Isaac camera frame readers.
 - `Vision_Pipeline`: fast local detector + tracker runtime.
 - `config.yaml`: project-level runtime configuration.
 - `Runtime`: headless live/runtime scripts for VM or robot integration.
-- `docs/operator_workflow.md`: planned operator UI, teaching, and unknown handling flow.
-
-Other parts such as prototype galleries, classifiers, novelty logic, UI, and
-robotics integration will be migrated later as separate modules.
+- `Teaching`: operator crop labeling and active gallery rebuild helpers.
+- `docs/operator_workflow.md`: operator UI, teaching, and unknown handling flow.
 
 ## Headless Runtime
 
@@ -33,7 +32,8 @@ python Runtime\run_live_vision.py --frames-dir D:\Coding\Omnibio\frames --limit 
 ```
 
 For HTTP/API camera input, set `camera.type: api` in `config.yaml` and put
-`CAMERA_API_URL` / `CAMERA_API_KEY` in a local `.env`.
+`CAMERA_API_URL` / `CAMERA_API_KEY` in a local `.env`. Temporary API misses are
+retried so the runtime does not stop on a single dropped frame.
 
 Debug a headless run by saving an annotated video:
 
@@ -44,6 +44,16 @@ python Runtime\run_live_vision.py --config config.yaml --debug-video
 The video is written under `outputs/live_debug_<timestamp>.mp4` when the run
 stops.
 
+Run live novelty/unknown detection separately:
+
+```powershell
+python Runtime\run_live_novelty.py --config config.yaml --debug-video
+```
+
+Normal live uses the full classifier gallery and does not output `new_1`.
+Novelty live uses `Models/Novelty_Detector/artifacts/` and may output
+`known` or `new_k`.
+
 ## Local Control Panel
 
 Start a small local operator page:
@@ -52,8 +62,10 @@ Start a small local operator page:
 python Runtime\control_server.py --host 127.0.0.1 --port 7860
 ```
 
-Open `http://127.0.0.1:7860` to start/stop the runtime, optionally enable debug
-video, edit `config.yaml`, and view recent object-passed events.
+Open `http://127.0.0.1:7860` to choose normal or novelty mode, start/stop the
+runtime, optionally enable debug video, edit `config.yaml`, and view recent
+object-passed events. Runtime stdout/stderr logs are written under
+`outputs/runtime_logs/`.
 
 ## Teaching Objects
 

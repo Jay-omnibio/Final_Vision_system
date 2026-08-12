@@ -51,6 +51,7 @@ camera:
   # api_url: http://127.0.0.1:3000
   # endpoint: /api/demo/camera/rgb/frame
   # timeout: 10.0
+  # retry_delay: 0.2
   # wait: false
 
 operator_store:
