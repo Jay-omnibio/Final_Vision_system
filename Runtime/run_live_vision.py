@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 import cv2
+import numpy as np
 import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -48,7 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--conf", type=float, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--classifier-device", default=None, choices=["auto", "cpu", "cuda"])
-    parser.add_argument("--classify-every", type=int, default=1000000)
+    parser.add_argument("--classify-every", type=int, default=1, help="Sample/classify each visible track every N track frames")
     parser.add_argument("--crop-padding", type=int, default=12)
     parser.add_argument("--min-crop-size", type=int, default=24)
     parser.add_argument("--debug-video", action="store_true", help="Save annotated debug video until runtime stops")
@@ -90,20 +91,39 @@ def crop_track(frame, track, padding: int):
     return frame[y1:y2, x1:x2]
 
 
-def update_track_labels(frame, result, classifier, labels: dict[int, dict], args: argparse.Namespace) -> None:
-    classify_every = max(1, args.classify_every)
+def l2_normalize(embedding) -> np.ndarray:
+    vector = np.asarray(embedding, dtype=np.float32).reshape(-1)
+    norm = np.linalg.norm(vector)
+    if norm > 0:
+        vector = vector / norm
+    return vector.astype(np.float32)
+
+
+def should_sample(track, args: argparse.Namespace) -> bool:
+    if track.missing_frames > 0:
+        return False
+    if track.width < args.min_crop_size or track.height < args.min_crop_size:
+        return False
+    return track.age % max(1, args.classify_every) == 0
+
+
+def update_track_labels(frame, result, classifier, labels: dict[int, dict], track_states: dict[int, dict], args: argparse.Namespace) -> None:
     for track in result.tracks:
-        if track.track_id in labels and result.frame_index % classify_every != 0:
+        state = track_states.setdefault(track.track_id, {"embeddings": []})
+        if not should_sample(track, args):
             continue
         crop = crop_track(frame, track, args.crop_padding)
-        if crop.shape[0] < args.min_crop_size or crop.shape[1] < args.min_crop_size:
+        if crop.size == 0 or crop.shape[0] < args.min_crop_size or crop.shape[1] < args.min_crop_size:
             continue
-        prediction = classifier.classify_image(crop, array_format="bgr")
+        state["embeddings"].append(classifier.embedder.embed_image(crop, array_format="bgr"))
+        mean_embedding = l2_normalize(np.mean(np.stack(state["embeddings"]), axis=0))
+        prediction = classifier.classify_embedding(mean_embedding)
         labels[track.track_id] = {
             "label": prediction.label,
             "score": prediction.score,
             "class_name": prediction.class_name,
             "subclass_name": prediction.subclass_name,
+            "embedding_count": len(state["embeddings"]),
         }
 
 
@@ -241,6 +261,7 @@ def main() -> None:
         jsonl_handle = jsonl_path.open("a", encoding="utf-8")
 
     track_labels: dict[int, dict] = {}
+    track_states: dict[int, dict] = {}
     frame_count = 0
     debug_writer = DebugVideoWriter(args.debug_video_path, fps=args.debug_fps) if args.debug_video else None
     stop_file = resolve_path(args.stop_file)
@@ -254,7 +275,7 @@ def main() -> None:
                 break
             frame_count += 1
             result = pipeline.process_frame(frame)
-            update_track_labels(frame, result, classifier, track_labels, args)
+            update_track_labels(frame, result, classifier, track_labels, track_states, args)
             events = event_detector.update(
                 frame_index=result.frame_index,
                 frame_shape=frame.shape,
