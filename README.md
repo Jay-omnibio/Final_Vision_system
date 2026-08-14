@@ -54,6 +54,23 @@ Normal live uses the full classifier gallery and does not output `new_1`.
 Novelty live uses `Models/Novelty_Detector/artifacts/` and may output
 `known` or `new_k`.
 
+## DINO Backend
+
+Both normal and novelty runtime read DINO settings from `classifier` in
+`config.yaml`:
+
+```yaml
+classifier:
+  dino_model: dinov2-small
+  dino_backend: onnx  # torch or onnx
+  dino_onnx_path: Models/DINO/onnx/dinov2-small.onnx
+  device: auto
+```
+
+Use `dino_backend: torch` to run the original PyTorch/Transformers embedder.
+Use `dino_backend: onnx` after exporting and comparing
+`Models/DINO/onnx/dinov2-small.onnx`.
+
 ## Local Control Panel
 
 Start a small local operator page:

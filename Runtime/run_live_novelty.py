@@ -25,7 +25,7 @@ for path in (PROJECT_ROOT, VISION_ROOT, DINO_ROOT, NOVELTY_ROOT):
 
 from Runtime.live_sources import create_frame_source  # noqa: E402
 from Runtime.object_store import ObjectEventStore  # noqa: E402
-from dino_embedder import DinoEmbedder  # noqa: E402
+from dino_embedder import create_dino_embedder  # noqa: E402
 from novelty_detector import l2_normalize, load_novelty_runtime  # noqa: E402
 from pipeline_core import ObjectPassingConfig, ObjectPassingDetector, VisionPipeline, VisionPipelineConfig  # noqa: E402
 
@@ -51,8 +51,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--detector", default=None, choices=["yolo", "subtract"])
     parser.add_argument("--conf", type=float, default=None)
     parser.add_argument("--device", default=None)
-    parser.add_argument("--dino-model", default="dinov2-small", choices=["dinov2-small", "dinov3"])
-    parser.add_argument("--dino-device", default="auto", choices=["auto", "cpu", "cuda"])
+    parser.add_argument("--dino-model", default=None, choices=["dinov2-small", "dinov3"])
+    parser.add_argument("--dino-device", default=None, choices=["auto", "cpu", "cuda"])
+    parser.add_argument("--dino-backend", default=None, choices=["torch", "pytorch", "onnx"])
+    parser.add_argument("--dino-onnx-path", default=None)
     parser.add_argument("--gallery", default="Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz")
     parser.add_argument("--known-embeddings", default="Models/Novelty_Detector/artifacts/embeddings/known.npz")
     parser.add_argument("--calibration", default="Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz")
@@ -88,6 +90,20 @@ def apply_overrides(config: VisionPipelineConfig, args: argparse.Namespace) -> V
     if args.device is not None:
         config.yolo_device = args.device
     return config
+
+
+def create_runtime_embedder(raw_config: dict, args: argparse.Namespace):
+    classifier_config = raw_config.get("classifier", {}) or {}
+    backend = args.dino_backend or str(classifier_config.get("dino_backend", "torch"))
+    model_name = args.dino_model or str(classifier_config.get("dino_model", "dinov2-small"))
+    device = args.dino_device or str(classifier_config.get("device", "auto"))
+    onnx_path = args.dino_onnx_path or classifier_config.get("dino_onnx_path")
+    return create_dino_embedder(
+        backend=backend,
+        model_name=model_name,
+        device=device,
+        onnx_path=resolve_path(onnx_path),
+    )
 
 
 def create_event_detector(config: VisionPipelineConfig) -> ObjectPassingDetector:
@@ -245,7 +261,7 @@ def main() -> None:
     pipeline = VisionPipeline(pipeline_config)
     event_detector = create_event_detector(pipeline_config)
     source = create_frame_source(raw_config.get("camera", {}) or {}, frames_dir=args.frames_dir, repeat=args.repeat_frames)
-    embedder = DinoEmbedder(model_name=args.dino_model, device=args.dino_device)
+    embedder = create_runtime_embedder(raw_config, args)
     novelty_runtime = load_novelty_runtime(
         gallery_path=resolve_path(args.gallery),
         known_embeddings_path=resolve_path(args.known_embeddings),

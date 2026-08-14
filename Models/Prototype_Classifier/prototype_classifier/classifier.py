@@ -13,7 +13,7 @@ from .types import ClassificationResult
 
 ensure_dino_import_path()
 
-from dino_embedder import DinoEmbedder  # noqa: E402
+from dino_embedder import create_dino_embedder  # noqa: E402
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GALLERY_PATH = PACKAGE_ROOT / "galleries" / "default_gallery.npz"
@@ -29,15 +29,19 @@ class PrototypeClassifier:
         dino_model: str = "dinov2-small",
         device: str = "auto",
         dino_model_id: str | None = None,
+        dino_backend: str = "torch",
+        dino_onnx_path: str | Path | None = None,
     ) -> None:
         self.gallery_path = Path(gallery_path) if gallery_path is not None else DEFAULT_GALLERY_PATH
         if not self.gallery_path.is_file():
             raise FileNotFoundError(f"Prototype gallery not found: {self.gallery_path}")
 
         self.gallery = load_gallery(self.gallery_path)
-        self.embedder = DinoEmbedder(
+        self.embedder = create_dino_embedder(
+            backend=dino_backend,
             model_name=dino_model,
             device=device,
+            onnx_path=dino_onnx_path,
             model_id=dino_model_id,
         )
 
@@ -52,4 +56,3 @@ class PrototypeClassifier:
 
     def classify_embedding(self, embedding: np.ndarray) -> ClassificationResult:
         return self.gallery.classify(embedding)
-

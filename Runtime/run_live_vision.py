@@ -243,6 +243,8 @@ def main() -> None:
     classifier = PrototypeClassifier(
         gallery_path=resolve_path(classifier_config.get("gallery_path")),
         dino_model=str(classifier_config.get("dino_model", "dinov2-small")),
+        dino_backend=str(classifier_config.get("dino_backend", "torch")),
+        dino_onnx_path=resolve_path(classifier_config.get("dino_onnx_path")),
         device=args.classifier_device or str(classifier_config.get("device", "auto")),
     )
 

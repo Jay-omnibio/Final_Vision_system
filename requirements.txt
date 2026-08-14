@@ -7,3 +7,6 @@ torch>=2.1
 transformers>=4.45
 huggingface_hub>=0.24
 ultralytics>=8.3
+onnx>=1.16
+onnxruntime>=1.18
+onnxscript>=0.7
