@@ -63,3 +63,8 @@ operator_store:
   root_dir: data/operator_events
   save_crops: true
   crop_padding: 12
+
+operator_app:
+  # Runtime mode is read from config; the operator UI does not switch it ad hoc.
+  runtime_mode: novelty
+  debug_video: false

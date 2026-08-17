@@ -71,18 +71,19 @@ Use `dino_backend: torch` to run the original PyTorch/Transformers embedder.
 Use `dino_backend: onnx` after exporting and comparing
 `Models/DINO/onnx/dinov2-small.onnx`.
 
-## Local Control Panel
+## Operator App
 
-Start a small local operator page:
+Start the local operator app:
 
 ```powershell
-python Runtime\control_server.py --host 127.0.0.1 --port 7860
+python Operator_App\server.py --host 127.0.0.1 --port 7860
 ```
 
-Open `http://127.0.0.1:7860` to choose normal or novelty mode, start/stop the
-runtime, optionally enable debug video, edit `config.yaml`, and view recent
-object-passed events. Runtime stdout/stderr logs are written under
-`outputs/runtime_logs/`.
+Open `http://127.0.0.1:7860` to start/stop the runtime, view object-passed
+events, review unknown `new_k` crops, assign labels into teaching data, rebuild
+the active gallery, and edit common config values. Runtime mode is read from
+`operator_app.runtime_mode` in `config.yaml`. Runtime stdout/stderr logs are
+written under `outputs/runtime_logs/`.
 
 ## Teaching Objects
 

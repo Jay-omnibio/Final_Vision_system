@@ -61,3 +61,7 @@ operator_store:
   root_dir: data/operator_events
   save_crops: true
   crop_padding: 12
+
+operator_app:
+  runtime_mode: novelty
+  debug_video: false

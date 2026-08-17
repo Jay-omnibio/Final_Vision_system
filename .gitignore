@@ -10,6 +10,7 @@ env/
 *.npz
 !Models/Prototype_Classifier/galleries/default_gallery.npz
 !Models/Prototype_Classifier/galleries/gallery.npz
+!Models/Prototype_Classifier/galleries/active_gallery.npz
 !Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz
 !Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz
 !Models/Novelty_Detector/artifacts/embeddings/known.npz

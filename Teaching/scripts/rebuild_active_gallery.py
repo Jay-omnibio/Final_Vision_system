@@ -18,7 +18,7 @@ for path in (PROJECT_ROOT, DINO_ROOT, CLASSIFIER_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from dino_embedder import DinoEmbedder  # noqa: E402
+from dino_embedder import create_dino_embedder  # noqa: E402
 from prototype_classifier.gallery import HierarchicalPrototypeGallery  # noqa: E402
 from Teaching.teaching_store import TeachingStore  # noqa: E402
 
@@ -29,6 +29,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--teaching-dir", default="data/teaching")
     parser.add_argument("--output", default="Models/Prototype_Classifier/galleries/active_gallery.npz")
     parser.add_argument("--dino-model", default="dinov2-small", choices=["dinov2-small", "dinov3"])
+    parser.add_argument("--dino-backend", default="torch", choices=["torch", "pytorch", "onnx"])
+    parser.add_argument("--dino-onnx-path", default=None)
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
     parser.add_argument("--mode", default="replace", choices=["replace", "append_average"])
     parser.add_argument("--update-config", action="store_true")
@@ -64,7 +66,7 @@ def load_base_subclasses(path: Path) -> dict[tuple[str, str], np.ndarray]:
     }
 
 
-def embed_teaching_images(teaching_dir: Path, embedder: DinoEmbedder) -> dict[tuple[str, str], list[np.ndarray]]:
+def embed_teaching_images(teaching_dir: Path, embedder) -> dict[tuple[str, str], list[np.ndarray]]:
     store = TeachingStore(teaching_dir)
     grouped: dict[tuple[str, str], list[np.ndarray]] = defaultdict(list)
     for class_name, object_name, image_path in store.iter_labeled_images():
@@ -79,11 +81,18 @@ def build_gallery(
     teaching_dir: Path,
     output_path: Path,
     dino_model: str,
+    dino_backend: str,
+    dino_onnx_path: Path | None,
     device: str,
     mode: str,
 ) -> dict:
     subclass_vectors = load_base_subclasses(base_gallery)
-    embedder = DinoEmbedder(model_name=dino_model, device=device)
+    embedder = create_dino_embedder(
+        backend=dino_backend,
+        model_name=dino_model,
+        device=device,
+        onnx_path=dino_onnx_path,
+    )
     taught = embed_teaching_images(teaching_dir, embedder)
 
     for label, embeddings in taught.items():
@@ -117,6 +126,8 @@ def build_gallery(
         "base_gallery": str(base_gallery),
         "teaching_dir": str(teaching_dir),
         "dino_model": dino_model,
+        "dino_backend": dino_backend,
+        "dino_onnx_path": str(dino_onnx_path) if dino_onnx_path else None,
         "mode": mode,
         "num_classes": len(class_names),
         "num_subclasses": len(subclass_names),
@@ -152,6 +163,8 @@ def main() -> None:
         teaching_dir=resolve(args.teaching_dir),
         output_path=output_path,
         dino_model=args.dino_model,
+        dino_backend=args.dino_backend,
+        dino_onnx_path=resolve(args.dino_onnx_path) if args.dino_onnx_path else None,
         device=args.device,
         mode=args.mode,
     )
