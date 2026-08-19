@@ -36,7 +36,7 @@ class OperatorHandler(BaseHTTPRequestHandler):
             if path == "/":
                 self._send_file(STATIC_ROOT / "index.html")
             elif path.startswith("/static/"):
-                self._send_file(STATIC_ROOT / path.removeprefix("/static/"))
+                self._send_static(path.removeprefix("/static/"))
             elif path == "/api/status":
                 payload = self.runtime.status()
                 payload["configured_mode"] = self.config_service.runtime_mode()
@@ -44,14 +44,23 @@ class OperatorHandler(BaseHTTPRequestHandler):
                 self._send_json(payload)
             elif path == "/api/settings":
                 self._send_json(self.config_service.settings())
+            elif path == "/api/model-status":
+                self._send_json(self.config_service.model_status())
             elif path == "/api/events":
                 limit = self._query_int("limit", 100)
-                self._send_json({"events": self.event_service.events(limit=limit)})
+                self._send_json({"events": self._event_service().events(limit=limit)})
             elif path == "/api/unknowns":
-                self._send_json({"groups": self.event_service.unknown_groups()})
+                self._send_json({"groups": self._event_service().unknown_groups()})
+            elif path == "/api/teaching-samples":
+                self._send_json({"samples": self.teaching_service.teaching_samples()})
+            elif path == "/api/rebuild-status":
+                self._send_json(self.teaching_service.rebuild_status())
             elif path == "/api/crop":
                 crop_path = parse_qs(urlparse(self.path).query).get("path", [""])[0]
-                self._send_file(self.event_service.resolve_crop(crop_path))
+                self._send_file(self._event_service().resolve_crop(crop_path))
+            elif path == "/api/teaching-image":
+                image_path = parse_qs(urlparse(self.path).query).get("path", [""])[0]
+                self._send_file(self.teaching_service.resolve_sample(image_path))
             else:
                 self.send_error(404, "Not found")
         except Exception as exc:
@@ -70,10 +79,17 @@ class OperatorHandler(BaseHTTPRequestHandler):
                 self._send_json(self.runtime.status())
             elif path == "/api/settings":
                 self._send_json(self.config_service.update_settings(self._read_json()))
+            elif path == "/api/reset-base-model":
+                self._send_json(self.config_service.reset_base_model())
             elif path == "/api/assign":
                 payload = self._read_json()
-                crop_paths = [str(path) for path in payload.get("crop_paths", []) if str(path).strip()]
-                events_by_crop = {path: self.event_service.event_by_crop(path) for path in crop_paths}
+                event_service = self._event_service()
+                requested_paths = [str(path) for path in payload.get("crop_paths", []) if str(path).strip()]
+                crop_paths = [str(event_service.resolve_crop(path)) for path in requested_paths]
+                events_by_crop = {
+                    resolved: event_service.event_by_crop(requested)
+                    for requested, resolved in zip(requested_paths, crop_paths)
+                }
                 result = self.teaching_service.assign_crops(
                     crop_paths,
                     class_name=str(payload.get("class_name", "")),
@@ -82,7 +98,14 @@ class OperatorHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json(result)
             elif path == "/api/rebuild-gallery":
-                self._send_json(self.teaching_service.rebuild_gallery())
+                self._send_json(self.teaching_service.start_rebuild_gallery())
+            elif path == "/api/delete-samples":
+                payload = self._read_json()
+                self._send_json(
+                    self.teaching_service.delete_samples(
+                        [str(path) for path in payload.get("image_paths", []) if str(path).strip()]
+                    )
+                )
             else:
                 self.send_error(404, "Not found")
         except Exception as exc:
@@ -118,6 +141,16 @@ class OperatorHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _event_service(self) -> EventService:
+        return EventService(self.config_service.events_path(), project_root=PROJECT_ROOT)
+
+    def _send_static(self, relative_path: str) -> None:
+        resolved = (STATIC_ROOT / relative_path).resolve()
+        static_root = STATIC_ROOT.resolve()
+        if static_root not in resolved.parents and resolved != static_root:
+            raise ValueError("Static path is outside app")
+        self._send_file(resolved)
 
     def _send_file(self, path: Path) -> None:
         resolved = path.resolve()

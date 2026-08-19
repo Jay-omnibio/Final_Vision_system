@@ -7,6 +7,15 @@ teaching products, and handling unknown objects.
 
 The first operator UI should be a small control panel, not a heavy vision app.
 
+Current product direction:
+
+- YOLO is the final detector path for the operator system.
+- Background subtraction remains historical/debug code, not the main operator
+  workflow.
+- Novelty classification is the main classification path.
+- Normal classification remains useful for comparison/debug, but not the main
+  operator flow.
+
 Core actions:
 
 - Start system
@@ -65,6 +74,8 @@ The second command writes:
 
 ```text
 Models/Prototype_Classifier/galleries/active_gallery.npz
+Models/Novelty_Detector/artifacts/embeddings/active_known.npz
+Models/Novelty_Detector/artifacts/calibration/active_novelty_mahalanobis.npz
 ```
 
 and can update `config.yaml` to use it.
@@ -80,7 +91,7 @@ Recommended flow:
 3. Operator clicks `Name This Object`.
 4. Operator chooses existing class or creates a new class.
 5. System moves/labels those crops into teaching data.
-6. Gallery is rebuilt.
+6. Gallery, active known embeddings, and novelty calibration are rebuilt.
 7. Future runs classify it by the operator-given name.
 
 Current command-line version:
@@ -109,3 +120,20 @@ Output adapters can be added later:
 - socket
 - ROS
 - API callback
+
+## Phase 1 Completed App Improvements
+
+- Model Status panel with active classifier gallery, novelty gallery, known
+  embeddings, calibration, subclass count, and missing-file warnings.
+- Selected-crop preview before assigning labels.
+- Reset to Base Model action.
+- Teaching sample management for deleting wrong assignments.
+- Rebuild progress/status logs in the UI.
+
+## Phase 2 Backlog
+
+- Dataset/image import flow for building galleries before objects appear live.
+- Safer class/object rename flow that updates teaching data and active models.
+- Model version snapshots and rollback beyond the base-model reset.
+- Operator-facing guidance for how many samples are enough per object.
+- Robotics output adapter for sending final ordered labels to the VM/control layer.

@@ -13,7 +13,9 @@ env/
 !Models/Prototype_Classifier/galleries/active_gallery.npz
 !Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz
 !Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz
+!Models/Novelty_Detector/artifacts/calibration/active_novelty_mahalanobis.npz
 !Models/Novelty_Detector/artifacts/embeddings/known.npz
+!Models/Novelty_Detector/artifacts/embeddings/active_known.npz
 !Models/YOLO_Detector/weights/best.pt
 outputs/
 data/

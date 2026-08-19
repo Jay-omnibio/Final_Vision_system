@@ -55,9 +55,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dino-device", default=None, choices=["auto", "cpu", "cuda"])
     parser.add_argument("--dino-backend", default=None, choices=["torch", "pytorch", "onnx"])
     parser.add_argument("--dino-onnx-path", default=None)
-    parser.add_argument("--gallery", default="Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz")
-    parser.add_argument("--known-embeddings", default="Models/Novelty_Detector/artifacts/embeddings/known.npz")
-    parser.add_argument("--calibration", default="Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz")
+    parser.add_argument("--gallery", default=None)
+    parser.add_argument("--known-embeddings", default=None)
+    parser.add_argument("--calibration", default=None)
     parser.add_argument("--groups-output", default="Models/Novelty_Detector/artifacts/groups/live_runtime_groups.npz")
     parser.add_argument("--sample-every", type=int, default=1)
     parser.add_argument("--min-embeddings", type=int, default=1)
@@ -104,6 +104,23 @@ def create_runtime_embedder(raw_config: dict, args: argparse.Namespace):
         device=device,
         onnx_path=resolve_path(onnx_path),
     )
+
+
+def novelty_paths(raw_config: dict, args: argparse.Namespace) -> tuple[Path | None, Path | None, Path | None]:
+    novelty_config = raw_config.get("novelty", {}) or {}
+    gallery = args.gallery or novelty_config.get(
+        "gallery_path",
+        "Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz",
+    )
+    known_embeddings = args.known_embeddings or novelty_config.get(
+        "known_embeddings_path",
+        "Models/Novelty_Detector/artifacts/embeddings/known.npz",
+    )
+    calibration = args.calibration or novelty_config.get(
+        "calibration_path",
+        "Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz",
+    )
+    return resolve_path(gallery), resolve_path(known_embeddings), resolve_path(calibration)
 
 
 def create_event_detector(config: VisionPipelineConfig) -> ObjectPassingDetector:
@@ -262,10 +279,11 @@ def main() -> None:
     event_detector = create_event_detector(pipeline_config)
     source = create_frame_source(raw_config.get("camera", {}) or {}, frames_dir=args.frames_dir, repeat=args.repeat_frames)
     embedder = create_runtime_embedder(raw_config, args)
+    gallery_path, known_embeddings_path, calibration_path = novelty_paths(raw_config, args)
     novelty_runtime = load_novelty_runtime(
-        gallery_path=resolve_path(args.gallery),
-        known_embeddings_path=resolve_path(args.known_embeddings),
-        calibration_path=resolve_path(args.calibration),
+        gallery_path=gallery_path,
+        known_embeddings_path=known_embeddings_path,
+        calibration_path=calibration_path,
     )
     store = None
     if not args.no_store:

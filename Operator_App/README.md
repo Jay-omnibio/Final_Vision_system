@@ -16,7 +16,32 @@ Open `http://127.0.0.1:7860`.
 - Show object-passed events and saved crops.
 - Review novelty `new_k` groups.
 - Assign selected event crops to `class/object` teaching labels.
-- Rebuild the active prototype gallery from teaching data.
+- Rebuild the active prototype gallery, novelty known embeddings, and novelty
+  calibration from teaching data.
 - Edit common runtime settings without touching raw YAML.
 
 Dataset import and full gallery design are Phase 2.
+
+## Phase 1 Status
+
+- Model Status panel shows active classifier gallery, novelty gallery, known
+  embeddings, calibration, subclass count, and missing-file warnings.
+- Selected-crop preview is shown before assigning labels.
+- Reset to Base Model switches config back to the original novelty gallery,
+  known embeddings, and calibration.
+- Teaching sample management supports removing wrongly assigned samples.
+- Rebuild progress/status logs are shown while gallery rebuild is running.
+
+## Novelty Learning Loop
+
+1. Run with `operator_app.runtime_mode: novelty`.
+2. Novelty events save crops under `data/operator_events/crops/`.
+3. Select crops from a `new_k` group and assign `class/object`.
+4. Rebuild Gallery.
+5. The app updates `config.yaml` so the next novelty run uses:
+   - `Models/Prototype_Classifier/galleries/active_gallery.npz`
+   - `Models/Novelty_Detector/artifacts/embeddings/active_known.npz`
+   - `Models/Novelty_Detector/artifacts/calibration/active_novelty_mahalanobis.npz`
+
+After that rebuild, the taught object can return as `known` with the operator
+label instead of `new_k`.

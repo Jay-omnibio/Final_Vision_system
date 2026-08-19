@@ -44,16 +44,16 @@ class NoveltyRuntime:
         is_new, novelty_score = self.calibration.is_new(embedding, predicted_label)
         top1, top2, margin = self._subclass_top2(embedding)
         subclass_score = float(prediction.subclass_score or prediction.score)
-        confident = subclass_score >= self.known_min_subclass_score and margin >= self.known_min_margin
+        high_confidence_override = subclass_score >= self.known_min_subclass_score and margin >= self.known_min_margin
 
         if (
             is_new
             and self.known_cosine_override is not None
             and subclass_score >= self.known_cosine_override
-            and confident
+            and high_confidence_override
         ):
             is_new = False
-        if not is_new and not confident:
+        if not is_new and subclass_score < self.known_min_subclass_score:
             is_new = True
 
         base = {

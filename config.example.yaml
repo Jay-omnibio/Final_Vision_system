@@ -43,6 +43,11 @@ classifier:
   dino_onnx_path: Models/DINO/onnx/dinov2-small.onnx
   device: auto
 
+novelty:
+  gallery_path: Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz
+  known_embeddings_path: Models/Novelty_Detector/artifacts/embeddings/known.npz
+  calibration_path: Models/Novelty_Detector/artifacts/calibration/novelty_mahalanobis.npz
+
 camera:
   type: direct_isaac
   camera_path: /World/Camera

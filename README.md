@@ -5,11 +5,11 @@ Clean standalone project for the final Omnibio vision runtime.
 Current migration scope:
 
 - `Models/DINO`: DINOv2-small and DINOv3 image embedding generation.
-- `Models/YOLO_Detector`: trained YOLO bounding-box inference.
+- `Models/YOLO_Detector`: final trained YOLO bounding-box inference.
 - `Models/Object_Tracker`: centroid-based object tracking.
-- `Models/Subtract_Detector`: background-subtraction bounding-box detection.
-- `Models/Prototype_Classifier`: DINO embedding + `.npz` prototype classification.
-- `Models/Novelty_Detector`: known/new runtime using migrated novelty artifacts.
+- `Models/Subtract_Detector`: historical/debug background-subtraction detector.
+- `Models/Prototype_Classifier`: support classifier/gallery code.
+- `Models/Novelty_Detector`: main known/new classification runtime.
 - `Camera_feed`: direct Isaac camera frame readers.
 - `Vision_Pipeline`: fast local detector + tracker runtime.
 - `config.yaml`: project-level runtime configuration.
@@ -44,15 +44,14 @@ python Runtime\run_live_vision.py --config config.yaml --debug-video
 The video is written under `outputs/live_debug_<timestamp>.mp4` when the run
 stops.
 
-Run live novelty/unknown detection separately:
+Run live novelty/unknown detection:
 
 ```powershell
 python Runtime\run_live_novelty.py --config config.yaml --debug-video
 ```
 
-Normal live uses the full classifier gallery and does not output `new_1`.
-Novelty live uses `Models/Novelty_Detector/artifacts/` and may output
-`known` or `new_k`.
+Novelty live is the main operator path and may output `known` or `new_k`.
+Normal live remains available for comparison/debug.
 
 ## DINO Backend
 
@@ -81,9 +80,9 @@ python Operator_App\server.py --host 127.0.0.1 --port 7860
 
 Open `http://127.0.0.1:7860` to start/stop the runtime, view object-passed
 events, review unknown `new_k` crops, assign labels into teaching data, rebuild
-the active gallery, and edit common config values. Runtime mode is read from
-`operator_app.runtime_mode` in `config.yaml`. Runtime stdout/stderr logs are
-written under `outputs/runtime_logs/`.
+the active gallery and novelty calibration, and edit common config values.
+Runtime mode is read from `operator_app.runtime_mode` in `config.yaml`. Runtime
+stdout/stderr logs are written under `outputs/runtime_logs/`.
 
 ## Teaching Objects
 

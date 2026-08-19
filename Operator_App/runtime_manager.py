@@ -105,8 +105,11 @@ class RuntimeManager:
     def log_tail(self, *, max_chars: int = 6000) -> str:
         if not self.current_log_path or not self.current_log_path.is_file():
             return ""
-        text = self.current_log_path.read_text(encoding="utf-8", errors="replace")
-        return text[-max_chars:]
+        try:
+            text = self.current_log_path.read_text(encoding="utf-8", errors="replace")
+            return text[-max_chars:]
+        except OSError:
+            return ""
 
     def _close_log(self) -> None:
         if self._log_handle is not None:

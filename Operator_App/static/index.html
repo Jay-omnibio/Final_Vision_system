@@ -24,6 +24,7 @@
       <button class="tab active" data-tab="run">Run</button>
       <button class="tab" data-tab="events">Events</button>
       <button class="tab" data-tab="unknowns">Unknown Review</button>
+      <button class="tab" data-tab="model">Model</button>
       <button class="tab" data-tab="settings">Settings</button>
     </nav>
 
@@ -57,6 +58,7 @@
         <div id="unknownGroups" class="cards"></div>
         <form id="assignForm" class="form">
           <h2>Assign Selected Crops</h2>
+          <div id="selectedPreview" class="preview-grid"></div>
           <label>Class name <input id="className" autocomplete="off" placeholder="bottle"></label>
           <label>Object name <input id="objectName" autocomplete="off" placeholder="cola_bottle"></label>
           <p id="selectedSummary">No crops selected.</p>
@@ -65,6 +67,26 @@
           <pre id="assignOutput" class="log small"></pre>
         </form>
       </div>
+    </section>
+
+    <section id="model" class="panel">
+      <div class="section-head">
+        <h2>Model Status</h2>
+        <div class="actions">
+          <button id="refreshModelBtn">Refresh</button>
+          <button id="resetBaseBtn">Reset To Base Model</button>
+        </div>
+      </div>
+      <div id="modelStatus" class="cards"></div>
+      <div class="section-head">
+        <h2>Teaching Samples</h2>
+        <div class="actions">
+          <button id="refreshSamplesBtn">Refresh</button>
+          <button id="deleteSamplesBtn">Delete Selected</button>
+        </div>
+      </div>
+      <div id="teachingSamples" class="cards"></div>
+      <pre id="modelOutput" class="log small"></pre>
     </section>
 
     <section id="settings" class="panel">
@@ -93,6 +115,9 @@
           </select>
         </label>
         <label>Gallery path <input name="gallery_path"></label>
+        <label>Novelty gallery <input name="novelty_gallery_path"></label>
+        <label>Novelty known embeddings <input name="novelty_known_embeddings_path"></label>
+        <label>Novelty calibration <input name="novelty_calibration_path"></label>
         <label>DINO backend
           <select name="dino_backend">
             <option value="onnx">onnx</option>

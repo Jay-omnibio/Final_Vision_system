@@ -13,6 +13,7 @@ class EventService:
     def __init__(self, events_path: Path, *, project_root: Path) -> None:
         self.events_path = events_path
         self.project_root = project_root.resolve()
+        self.crops_root = (events_path.parent / "crops").resolve()
 
     def events(self, *, limit: int = 100) -> list[dict[str, Any]]:
         if not self.events_path.is_file():
@@ -53,8 +54,8 @@ class EventService:
         if not path.is_absolute():
             path = self.project_root / path
         resolved = path.resolve()
-        if self.project_root not in resolved.parents and resolved != self.project_root:
-            raise ValueError("Crop path is outside project")
+        if self.crops_root not in resolved.parents and resolved != self.crops_root:
+            raise ValueError("Crop path is outside operator crop storage")
         if not resolved.is_file():
             raise FileNotFoundError(f"Crop not found: {resolved}")
         return resolved
