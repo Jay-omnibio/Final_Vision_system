@@ -16,9 +16,10 @@ Open `http://127.0.0.1:7860`.
 - Show object-passed events and saved crops.
 - Review novelty `new_k` groups.
 - Assign selected event crops to `class/object` teaching labels.
-- Rebuild the active prototype gallery, novelty known embeddings, and novelty
-  calibration from teaching data.
+- Automatically rebuild the active prototype gallery, novelty known embeddings,
+  and novelty calibration after saving a label.
 - Edit common runtime settings without touching raw YAML.
+- Clear old event/crop history when starting a clean validation run.
 
 Dataset import and full gallery design are Phase 2.
 
@@ -34,10 +35,10 @@ Dataset import and full gallery design are Phase 2.
 
 ## Novelty Learning Loop
 
-1. Run with `operator_app.runtime_mode: novelty`.
+1. Start the operator app and run the fixed novelty runtime.
 2. Novelty events save crops under `data/operator_events/crops/`.
 3. Select crops from a `new_k` group and assign `class/object`.
-4. Rebuild Gallery.
+4. Click `Save Label + Rebuild`.
 5. The app updates `config.yaml` so the next novelty run uses:
    - `Models/Prototype_Classifier/galleries/active_gallery.npz`
    - `Models/Novelty_Detector/artifacts/embeddings/active_known.npz`

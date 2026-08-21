@@ -58,7 +58,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fps", type=float, default=10.0)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--repeat", type=int, default=1, help="Repeat the selected frame sequence while keeping novelty group memory")
-    parser.add_argument("--detector", default="yolo", choices=["yolo", "subtract"])
     parser.add_argument("--conf", type=float, default=0.45)
     parser.add_argument("--iou", type=float, default=0.45)
     parser.add_argument("--device", default="cpu")
@@ -78,7 +77,6 @@ def parse_args() -> argparse.Namespace:
 
 
 def apply_overrides(config: VisionPipelineConfig, args: argparse.Namespace) -> VisionPipelineConfig:
-    config.detector_type = args.detector
     config.yolo_conf = args.conf
     config.yolo_iou = args.iou
     config.yolo_device = args.device

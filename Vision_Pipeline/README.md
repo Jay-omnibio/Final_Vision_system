@@ -1,10 +1,10 @@
 # Vision Pipeline
 
-Fast local pipeline that connects a detector to the object tracker.
+Fast local pipeline that connects YOLO detection to the object tracker.
 
 Current scope:
 
-- load one detector once
+- load the YOLO detector once
 - load one tracker once
 - process frames repeatedly
 - return raw detection boxes and tracked objects
@@ -18,12 +18,10 @@ Not included yet:
 - Streamlit
 - robotics API calls
 
-## Detector Options
+## Detector
 
-| Detector | Needs |
-| --- | --- |
-| `yolo` | `Models/YOLO_Detector/weights/best.onnx` or `Models/YOLO_Detector/weights/best.pt` |
-| `subtract` | an empty-background image |
+The final pipeline uses YOLO only. Background subtraction was removed from the
+final runtime path.
 
 ## Python Usage
 
@@ -31,25 +29,12 @@ Not included yet:
 from pipeline_core import VisionPipeline, VisionPipelineConfig
 
 pipeline = VisionPipeline(
-    VisionPipelineConfig(
-        detector_type="yolo",
-    )
+    VisionPipelineConfig()
 )
 
 result = pipeline.process_frame(frame_bgr)
 print(result.detections)
 print(result.tracks)
-```
-
-For subtract:
-
-```python
-pipeline = VisionPipeline(
-    VisionPipelineConfig(
-        detector_type="subtract",
-        background_image="no_object.jpg",
-    )
-)
 ```
 
 Or load root config:
@@ -63,19 +48,13 @@ pipeline = VisionPipeline.from_yaml("config.yaml")
 Run one image:
 
 ```powershell
-python Vision_Pipeline\scripts\run_one_image.py path\to\image.jpg --config config.yaml --detector yolo
-```
-
-Run subtract with a background image:
-
-```powershell
-python Vision_Pipeline\scripts\run_one_image.py frame.jpg --config config.yaml --detector subtract --background no_object.jpg
+python Vision_Pipeline\scripts\run_one_image.py path\to\image.jpg --config config.yaml
 ```
 
 Run a folder in sorted order so tracker IDs persist across frames:
 
 ```powershell
-python Vision_Pipeline\scripts\run_image_sequence.py path\to\frames --config config.yaml --detector yolo
+python Vision_Pipeline\scripts\run_image_sequence.py path\to\frames --config config.yaml
 ```
 
 Run saved frames and write an annotated video:

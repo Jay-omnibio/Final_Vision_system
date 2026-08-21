@@ -1,23 +1,10 @@
 vision:
-  detector_type: yolo
-
   yolo:
     # Use either an ONNX model or a PyTorch .pt file.
     weights: Models/YOLO_Detector/weights/best.onnx
     conf: 0.45
     iou: 0.45
     device: cpu
-
-  subtract:
-    background_image: data/no_object.jpg
-    mode: improved
-    threshold: 30
-    min_area: 500
-    kernel_size: 25
-    roi: null
-    merge_horizontal_gap: 25
-    merge_vertical_overlap_ratio: 0.35
-    hsv_threshold_boost: 8
 
   tracker:
     max_distance: 300.0
@@ -70,6 +57,4 @@ operator_store:
   crop_padding: 12
 
 operator_app:
-  # Runtime mode is read from config; the operator UI does not switch it ad hoc.
-  runtime_mode: novelty
   debug_video: false

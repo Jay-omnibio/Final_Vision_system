@@ -72,7 +72,7 @@ class OperatorHandler(BaseHTTPRequestHandler):
             if path == "/api/start":
                 payload = self._read_json()
                 debug_video = bool(payload.get("debug_video", self.config_service.debug_video_default()))
-                self.runtime.start(mode=self.config_service.runtime_mode(), debug_video=debug_video)
+                self.runtime.start(debug_video=debug_video)
                 self._send_json(self.runtime.status())
             elif path == "/api/stop":
                 self.runtime.stop()
@@ -106,6 +106,8 @@ class OperatorHandler(BaseHTTPRequestHandler):
                         [str(path) for path in payload.get("image_paths", []) if str(path).strip()]
                     )
                 )
+            elif path == "/api/clear-events":
+                self._send_json(self._event_service().clear_events())
             else:
                 self.send_error(404, "Not found")
         except Exception as exc:

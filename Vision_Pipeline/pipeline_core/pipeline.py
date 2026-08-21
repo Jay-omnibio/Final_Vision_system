@@ -20,7 +20,6 @@ class VisionPipeline:
 
     def __init__(self, config: VisionPipelineConfig | None = None) -> None:
         self.config = config or VisionPipelineConfig()
-        self.detector_type = self.config.detector_type.lower().strip()
         self.detector = self._create_detector()
         self.tracker = CentroidTracker(
             max_distance=self.config.max_track_distance,
@@ -45,7 +44,7 @@ class VisionPipeline:
             frame_index=self.frame_index,
             detections=detections,
             tracks=[self._to_track(track) for track in tracks],
-            detector_type=self.detector_type,
+            detector_type="yolo",
         )
 
     def reset_tracker(self, *, reset_ids: bool = False) -> None:
@@ -55,37 +54,14 @@ class VisionPipeline:
             self.frame_index = 0
 
     def _create_detector(self):
-        if self.detector_type == "yolo":
-            from yolo_detector import YoloDetector
+        from yolo_detector import YoloDetector
 
-            return YoloDetector(
-                weights=self.config.yolo_weights,
-                conf=self.config.yolo_conf,
-                iou=self.config.yolo_iou,
-                device=self.config.yolo_device,
-            )
-
-        if self.detector_type == "subtract":
-            if self.config.background_image is None:
-                raise ValueError("background_image is required when detector_type='subtract'")
-            from subtract_detector import BackgroundSubtractionConfig, SubtractDetector
-
-            subtract_config = BackgroundSubtractionConfig(
-                threshold=self.config.subtract_threshold,
-                min_area=self.config.subtract_min_area,
-                kernel_size=self.config.subtract_kernel_size,
-                roi=self.config.subtract_roi,
-                merge_horizontal_gap=self.config.subtract_merge_horizontal_gap,
-                merge_vertical_overlap_ratio=self.config.subtract_merge_vertical_overlap_ratio,
-                hsv_threshold_boost=self.config.subtract_hsv_threshold_boost,
-            )
-            return SubtractDetector.from_background_image(
-                self.config.background_image,
-                mode=self.config.subtract_mode,
-                config=subtract_config,
-            )
-
-        raise ValueError("detector_type must be 'yolo' or 'subtract'")
+        return YoloDetector(
+            weights=self.config.yolo_weights,
+            conf=self.config.yolo_conf,
+            iou=self.config.yolo_iou,
+            device=self.config.yolo_device,
+        )
 
     @staticmethod
     def _to_detection(box: Any) -> PipelineDetection:

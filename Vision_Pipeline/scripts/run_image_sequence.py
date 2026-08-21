@@ -36,8 +36,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("folder", help="Folder of image frames")
     parser.add_argument("--config", default="config.yaml", help="Pipeline config YAML path")
-    parser.add_argument("--detector", default=None, choices=["yolo", "subtract"])
-    parser.add_argument("--background", default=None, help="Override subtract background image")
     parser.add_argument("--yolo-weights", default=None)
     parser.add_argument("--conf", type=float, default=None)
     parser.add_argument("--iou", type=float, default=None)
@@ -50,8 +48,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     config = VisionPipelineConfig.from_yaml(args.config)
-    if args.detector is not None:
-        config.detector_type = args.detector
     if args.yolo_weights is not None:
         config.yolo_weights = args.yolo_weights
     if args.conf is not None:
@@ -60,8 +56,6 @@ def main() -> None:
         config.yolo_iou = args.iou
     if args.device is not None:
         config.yolo_device = args.device
-    if args.background is not None:
-        config.background_image = args.background
 
     pipeline = VisionPipeline(config)
 

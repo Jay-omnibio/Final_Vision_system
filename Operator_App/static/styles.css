@@ -59,6 +59,16 @@ section, .form, .event-card, .unknown-card {
   border-radius: 8px;
   padding: 16px;
 }
+.info-card {
+  display: grid;
+  gap: 6px;
+  background: #0c0f14;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  color: var(--muted);
+}
+.info-card strong { color: var(--text); }
 
 .event-list, .cards { display: grid; gap: 10px; }
 .preview-grid {

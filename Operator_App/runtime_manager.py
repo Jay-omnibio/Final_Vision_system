@@ -30,12 +30,12 @@ class RuntimeManager:
         self._close_log()
         return False
 
-    def start(self, *, mode: str, debug_video: bool = False) -> None:
+    def start(self, *, debug_video: bool = False) -> None:
         if self.is_running():
             return
 
-        mode = "novelty" if mode == "novelty" else "normal"
-        script = "Runtime/run_live_novelty.py" if mode == "novelty" else "Runtime/run_live_vision.py"
+        mode = "novelty"
+        script = "Runtime/run_live_novelty.py"
 
         self.stop_file.parent.mkdir(parents=True, exist_ok=True)
         if self.stop_file.exists():

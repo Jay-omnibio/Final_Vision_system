@@ -10,7 +10,6 @@ MODELS_ROOT = PROJECT_ROOT / "Models"
 
 MODEL_IMPORT_PATHS = [
     MODELS_ROOT / "YOLO_Detector",
-    MODELS_ROOT / "Subtract_Detector",
     MODELS_ROOT / "Object_Tracker",
 ]
 
@@ -20,4 +19,3 @@ def ensure_model_import_paths() -> None:
         path_text = str(path)
         if path.is_dir() and path_text not in sys.path:
             sys.path.insert(0, path_text)
-

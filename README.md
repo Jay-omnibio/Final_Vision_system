@@ -7,8 +7,7 @@ Current migration scope:
 - `Models/DINO`: DINOv2-small and DINOv3 image embedding generation.
 - `Models/YOLO_Detector`: final trained YOLO bounding-box inference.
 - `Models/Object_Tracker`: centroid-based object tracking.
-- `Models/Subtract_Detector`: historical/debug background-subtraction detector.
-- `Models/Prototype_Classifier`: support classifier/gallery code.
+- `Models/Prototype_Classifier`: gallery utilities used by novelty learning.
 - `Models/Novelty_Detector`: main known/new classification runtime.
 - `Camera_feed`: direct Isaac camera frame readers.
 - `Vision_Pipeline`: fast local detector + tracker runtime.
@@ -22,13 +21,13 @@ Current migration scope:
 Run live from the configured camera source:
 
 ```powershell
-python Runtime\run_live_vision.py --config config.yaml --detector yolo --conf 0.45 --device cpu
+python Runtime\run_live_novelty.py --config config.yaml --conf 0.45 --device cpu
 ```
 
 Run locally from saved frames:
 
 ```powershell
-python Runtime\run_live_vision.py --frames-dir D:\Coding\Omnibio\frames --limit 300 --detector yolo --conf 0.45 --device cpu
+python Runtime\run_live_novelty.py --frames-dir D:\Coding\Omnibio\frames --limit 300 --conf 0.45 --device cpu
 ```
 
 For HTTP/API camera input, set `camera.type: api` in `config.yaml` and put
@@ -38,25 +37,17 @@ retried so the runtime does not stop on a single dropped frame.
 Debug a headless run by saving an annotated video:
 
 ```powershell
-python Runtime\run_live_vision.py --config config.yaml --debug-video
-```
-
-The video is written under `outputs/live_debug_<timestamp>.mp4` when the run
-stops.
-
-Run live novelty/unknown detection:
-
-```powershell
 python Runtime\run_live_novelty.py --config config.yaml --debug-video
 ```
 
+The video is written under `outputs/live_novelty_debug_<timestamp>.mp4` when the
+run stops.
+
 Novelty live is the main operator path and may output `known` or `new_k`.
-Normal live remains available for comparison/debug.
 
 ## DINO Backend
 
-Both normal and novelty runtime read DINO settings from `classifier` in
-`config.yaml`:
+The novelty runtime reads DINO settings from `classifier` in `config.yaml`:
 
 ```yaml
 classifier:
@@ -81,8 +72,8 @@ python Operator_App\server.py --host 127.0.0.1 --port 7860
 Open `http://127.0.0.1:7860` to start/stop the runtime, view object-passed
 events, review unknown `new_k` crops, assign labels into teaching data, rebuild
 the active gallery and novelty calibration, and edit common config values.
-Runtime mode is read from `operator_app.runtime_mode` in `config.yaml`. Runtime
-stdout/stderr logs are written under `outputs/runtime_logs/`.
+The operator app always starts `Runtime/run_live_novelty.py` with YOLO detection.
+Runtime stdout/stderr logs are written under `outputs/runtime_logs/`.
 
 ## Teaching Objects
 
@@ -93,7 +84,7 @@ into the teaching dataset:
 python Teaching\scripts\label_event_crops.py --class-name bottle --object-name cola_bottle --label-filter new_1
 ```
 
-Rebuild the active classifier gallery:
+Rebuild the active novelty gallery, known embeddings, and calibration:
 
 ```powershell
 python Teaching\scripts\rebuild_active_gallery.py --update-config

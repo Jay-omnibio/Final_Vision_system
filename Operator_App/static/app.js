@@ -183,6 +183,10 @@ async function refreshRebuildStatus() {
   if (status.running) setTimeout(refreshRebuildStatus, 1500);
   else {
     await Promise.all([refreshModelStatus(), loadSettings(), refreshTeachingSamples()]);
+    if (status.ok) {
+      document.getElementById("assignOutput").textContent =
+        `${JSON.stringify(status, null, 2)}\n\nRebuild complete. Stop and Start runtime to load the new model.`;
+    }
   }
 }
 
@@ -229,6 +233,14 @@ function bindActions() {
     await refreshStatus();
   });
   document.getElementById("refreshEventsBtn").addEventListener("click", refreshEvents);
+  document.getElementById("clearEventsBtn").addEventListener("click", async () => {
+    const result = await api("/api/clear-events", { method: "POST" });
+    document.getElementById("runtimeLog").textContent = `Cleared old events: ${JSON.stringify(result)}`;
+    state.selectedCrops.clear();
+    state.cropUrls.clear();
+    await Promise.all([refreshEvents(), refreshUnknowns()]);
+    updateSelectedSummary();
+  });
   document.getElementById("refreshUnknownsBtn").addEventListener("click", refreshUnknowns);
   document.getElementById("refreshModelBtn").addEventListener("click", refreshModelStatus);
   document.getElementById("refreshSamplesBtn").addEventListener("click", refreshTeachingSamples);
@@ -255,6 +267,10 @@ function bindActions() {
   });
   document.getElementById("assignForm").addEventListener("submit", async event => {
     event.preventDefault();
+    if (!state.selectedCrops.size) {
+      document.getElementById("assignOutput").textContent = "Select at least one crop first.";
+      return;
+    }
     const result = await api("/api/assign", {
       method: "POST",
       body: JSON.stringify({
@@ -263,10 +279,13 @@ function bindActions() {
         object_name: document.getElementById("objectName").value,
       }),
     });
-    document.getElementById("assignOutput").textContent = JSON.stringify(result, null, 2);
+    document.getElementById("assignOutput").textContent = `${JSON.stringify(result, null, 2)}\n\nStarting rebuild...`;
     state.selectedCrops.clear();
     await refreshTeachingSamples();
     updateSelectedSummary();
+    const rebuild = await api("/api/rebuild-gallery", { method: "POST" });
+    document.getElementById("assignOutput").textContent = JSON.stringify(rebuild, null, 2);
+    await refreshRebuildStatus();
   });
   document.getElementById("rebuildBtn").addEventListener("click", async () => {
     document.getElementById("assignOutput").textContent = "Rebuilding gallery...";

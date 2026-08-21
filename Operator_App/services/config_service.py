@@ -29,9 +29,7 @@ class ConfigService:
         self.config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
 
     def runtime_mode(self) -> str:
-        config = self.load()
-        mode = str(config.get("operator_app", {}).get("runtime_mode", "novelty")).lower()
-        return "normal" if mode == "normal" else "novelty"
+        return "novelty"
 
     def debug_video_default(self) -> bool:
         config = self.load()
@@ -57,15 +55,14 @@ class ConfigService:
         operator_store = config.get("operator_store", {}) or {}
         operator_app = config.get("operator_app", {}) or {}
         return {
-            "runtime_mode": str(operator_app.get("runtime_mode", "novelty")),
+            "runtime_mode": "novelty",
             "debug_video": bool(operator_app.get("debug_video", False)),
-            "detector_type": str(vision.get("detector_type", "yolo")),
+            "detector_type": "yolo",
             "yolo_weights": str(yolo.get("weights", "")),
             "yolo_conf": float(yolo.get("conf", 0.45)),
             "yolo_device": "" if yolo.get("device") is None else str(yolo.get("device")),
             "event_line_ratio": float(events.get("line_ratio", 0.88)),
             "event_trigger_position": str(events.get("trigger_position", "leading_edge")),
-            "gallery_path": str(classifier.get("gallery_path", "")),
             "novelty_gallery_path": str(novelty.get("gallery_path", "")),
             "novelty_known_embeddings_path": str(novelty.get("known_embeddings_path", "")),
             "novelty_calibration_path": str(novelty.get("calibration_path", "")),
@@ -89,13 +86,8 @@ class ConfigService:
         camera = config.setdefault("camera", {})
         operator_store = config.setdefault("operator_store", {})
         operator_app = config.setdefault("operator_app", {})
-
-        if "runtime_mode" in payload:
-            operator_app["runtime_mode"] = "normal" if payload["runtime_mode"] == "normal" else "novelty"
         if "debug_video" in payload:
             operator_app["debug_video"] = bool(payload["debug_video"])
-        if "detector_type" in payload:
-            vision["detector_type"] = str(payload["detector_type"])
         if "yolo_weights" in payload:
             yolo["weights"] = str(payload["yolo_weights"])
         if "yolo_conf" in payload:
@@ -107,8 +99,6 @@ class ConfigService:
             events["line_ratio"] = float(payload["event_line_ratio"])
         if "event_trigger_position" in payload:
             events["trigger_position"] = str(payload["event_trigger_position"])
-        if "gallery_path" in payload:
-            classifier["gallery_path"] = str(payload["gallery_path"])
         if "novelty_gallery_path" in payload:
             novelty["gallery_path"] = str(payload["novelty_gallery_path"])
         if "novelty_known_embeddings_path" in payload:
@@ -138,19 +128,16 @@ class ConfigService:
     def model_status(self) -> dict[str, Any]:
         settings = self.settings()
         paths = {
-            "classifier_gallery": settings["gallery_path"],
             "novelty_gallery": settings["novelty_gallery_path"],
             "known_embeddings": settings["novelty_known_embeddings_path"],
             "calibration": settings["novelty_calibration_path"],
             "dino_onnx": settings["dino_onnx_path"],
             "yolo_weights": settings["yolo_weights"],
         }
-        runtime_mode = settings["runtime_mode"].lower()
         required_artifacts = {
-            "classifier_gallery": runtime_mode == "normal",
-            "novelty_gallery": runtime_mode == "novelty",
-            "known_embeddings": runtime_mode == "novelty",
-            "calibration": runtime_mode == "novelty",
+            "novelty_gallery": True,
+            "known_embeddings": True,
+            "calibration": True,
             "dino_onnx": settings["dino_backend"].lower() == "onnx",
             "yolo_weights": True,
         }

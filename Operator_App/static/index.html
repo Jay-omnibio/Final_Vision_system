@@ -44,7 +44,10 @@
     <section id="events" class="panel">
       <div class="section-head">
         <h2>Recent Events</h2>
-        <button id="refreshEventsBtn">Refresh</button>
+        <div class="actions">
+          <button id="refreshEventsBtn">Refresh</button>
+          <button id="clearEventsBtn">Clear Old Events</button>
+        </div>
       </div>
       <div id="eventCards" class="cards"></div>
     </section>
@@ -62,8 +65,8 @@
           <label>Class name <input id="className" autocomplete="off" placeholder="bottle"></label>
           <label>Object name <input id="objectName" autocomplete="off" placeholder="cola_bottle"></label>
           <p id="selectedSummary">No crops selected.</p>
-          <button class="primary" type="submit">Save Label</button>
-          <button id="rebuildBtn" type="button">Rebuild Gallery</button>
+          <button class="primary" type="submit">Save Label + Rebuild</button>
+          <button id="rebuildBtn" type="button">Rebuild Again</button>
           <pre id="assignOutput" class="log small"></pre>
         </form>
       </div>
@@ -91,18 +94,10 @@
 
     <section id="settings" class="panel">
       <form id="settingsForm" class="settings-grid">
-        <label>Runtime mode
-          <select name="runtime_mode">
-            <option value="novelty">novelty</option>
-            <option value="normal">normal</option>
-          </select>
-        </label>
-        <label>Detector
-          <select name="detector_type">
-            <option value="yolo">yolo</option>
-            <option value="subtract">subtract</option>
-          </select>
-        </label>
+        <div class="info-card">
+          <strong>Runtime</strong>
+          <span>Novelty classification with YOLO detector.</span>
+        </div>
         <label>YOLO weights <input name="yolo_weights"></label>
         <label>YOLO confidence <input name="yolo_conf" type="number" min="0" max="1" step="0.01"></label>
         <label>YOLO device <input name="yolo_device" placeholder="cpu, cuda, or blank"></label>
@@ -114,7 +109,6 @@
             <option value="trailing_edge">trailing_edge</option>
           </select>
         </label>
-        <label>Gallery path <input name="gallery_path"></label>
         <label>Novelty gallery <input name="novelty_gallery_path"></label>
         <label>Novelty known embeddings <input name="novelty_known_embeddings_path"></label>
         <label>Novelty calibration <input name="novelty_calibration_path"></label>

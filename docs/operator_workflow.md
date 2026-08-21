@@ -10,11 +10,9 @@ The first operator UI should be a small control panel, not a heavy vision app.
 Current product direction:
 
 - YOLO is the final detector path for the operator system.
-- Background subtraction remains historical/debug code, not the main operator
-  workflow.
 - Novelty classification is the main classification path.
-- Normal classification remains useful for comparison/debug, but not the main
-  operator flow.
+- Normal classification and background subtraction are no longer part of the
+  final operator flow.
 
 Core actions:
 

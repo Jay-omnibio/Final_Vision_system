@@ -48,7 +48,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jsonl", default=None, help="Optional path to write one JSON event per line")
     parser.add_argument("--no-store", action="store_true", help="Disable operator event/crop storage")
     parser.add_argument("--print-json", action="store_true")
-    parser.add_argument("--detector", default=None, choices=["yolo", "subtract"])
     parser.add_argument("--conf", type=float, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--dino-model", default=None, choices=["dinov2-small", "dinov3"])
@@ -83,8 +82,6 @@ def resolve_path(path: str | Path | None) -> Path | None:
 
 
 def apply_overrides(config: VisionPipelineConfig, args: argparse.Namespace) -> VisionPipelineConfig:
-    if args.detector is not None:
-        config.detector_type = args.detector
     if args.conf is not None:
         config.yolo_conf = args.conf
     if args.device is not None:

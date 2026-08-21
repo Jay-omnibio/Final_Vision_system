@@ -52,8 +52,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--json", default=None, help="Optional JSON result path")
     parser.add_argument("--fps", type=float, default=20.0)
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--detector", default=None, choices=["yolo", "subtract"])
-    parser.add_argument("--background", default=None, help="Override subtract background image")
     parser.add_argument("--yolo-weights", default=None)
     parser.add_argument("--conf", type=float, default=None)
     parser.add_argument("--iou", type=float, default=None)
@@ -80,10 +78,6 @@ def parse_args() -> argparse.Namespace:
 
 
 def apply_overrides(config: VisionPipelineConfig, args: argparse.Namespace) -> VisionPipelineConfig:
-    if args.detector is not None:
-        config.detector_type = args.detector
-    if args.background is not None:
-        config.background_image = args.background
     if args.yolo_weights is not None:
         config.yolo_weights = args.yolo_weights
     if args.conf is not None:

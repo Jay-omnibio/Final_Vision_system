@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
@@ -48,6 +49,17 @@ class EventService:
             if str(event.get("crop_path", "")) == crop_path:
                 return event
         return None
+
+    def clear_events(self) -> dict[str, Any]:
+        removed_events = self.events_path.is_file()
+        removed_crops = self.crops_root.is_dir()
+        if removed_events:
+            self.events_path.unlink()
+        if removed_crops:
+            shutil.rmtree(self.crops_root)
+        self.events_path.parent.mkdir(parents=True, exist_ok=True)
+        self.crops_root.mkdir(parents=True, exist_ok=True)
+        return {"removed_events": removed_events, "removed_crops": removed_crops}
 
     def resolve_crop(self, crop_path: str) -> Path:
         path = Path(crop_path)

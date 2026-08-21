@@ -28,7 +28,7 @@ from Teaching.teaching_store import TeachingStore  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-gallery", default="Models/Prototype_Classifier/galleries/default_gallery.npz")
+    parser.add_argument("--base-gallery", default="Models/Novelty_Detector/artifacts/prototypes/gallery_known_hierarchical.npz")
     parser.add_argument("--base-known-embeddings", default="Models/Novelty_Detector/artifacts/embeddings/known.npz")
     parser.add_argument("--teaching-dir", default="data/teaching")
     parser.add_argument("--output", default="Models/Prototype_Classifier/galleries/active_gallery.npz")
